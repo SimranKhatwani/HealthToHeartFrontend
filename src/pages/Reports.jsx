@@ -58,7 +58,7 @@ export default function Reports() {
   const [showExportOptions, setShowExportOptions] = useState(false)
   const [reportData, setReportData] = useState(null);
   const [dataType, setDataType] = useState("financial")
-  const { data, isLoading } = useGetReportsQuery(dataType);
+  const { data } = useGetReportsQuery(dataType);
   const [deleteReports] = useDeleteReportsMutation()
   const [editReports] = useEditReportsMutation()
   const formatDate = useFormattedDate()
@@ -104,23 +104,22 @@ export default function Reports() {
     e.preventDefault();
 
     try {
-      let response;
       if (reportData) {
         // Editing an existing report
-        response = await editReports({
+        await editReports({
           id: reportData._id,
           ...formData,
         }).unwrap();
         setShowGenerateReport(false);
       } else {
         // Creating a new report
-        response = await createReports(formData).unwrap();
+        await createReports(formData).unwrap();
         toast.success(t('translation:reportGeneratedSuccessfully'));
         setShowGenerateReport(false);
       }
     } catch (err) {
       console.error("Error submitting report data:", err);
-      setError(err?.data?.message || "Failed to submit report data");
+      toast.error(err?.data?.message || "Failed to submit report data");
     }
   };
 
