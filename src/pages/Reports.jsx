@@ -16,7 +16,7 @@ import {
 } from "../components/UI/Dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/UI/Table"
 import Badge from "../components/UI/Badge"
-import Checkbox from "../components/UI/Checkbox"
+import Checkbox from "../components/UI/CheckBox"
 import {
   Download,
   FileText,
@@ -42,8 +42,8 @@ import {
 } from "lucide-react"
 import { useGetReportsQuery, useCreateReportsMutation, useDeleteReportsMutation, useEditReportsMutation } from "../redux/slices/reportsSlice"
 import useFormattedDate from "../components/hooks/useFormattedDate";
-import { toast } from "react-toastify"; 
-import "react-toastify/dist/ReactToastify.css"; 
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { downloadPdf } from '../components/utilis/DownloadPdfs';
 
 
@@ -59,8 +59,8 @@ export default function Reports() {
   const [reportData, setReportData] = useState(null);
   const [dataType, setDataType] = useState("financial")
   const { data, isLoading } = useGetReportsQuery(dataType);
-  const [ deleteReports ] = useDeleteReportsMutation()
-  const [ editReports ] = useEditReportsMutation()
+  const [deleteReports] = useDeleteReportsMutation()
+  const [editReports] = useEditReportsMutation()
   const formatDate = useFormattedDate()
   const [formData, setFormData] = useState({
     reportName: '',
@@ -82,18 +82,18 @@ export default function Reports() {
       setFormData({
         reportName: reportData.reportName,
         type: reportData.type,
-        reportFormat:  reportData.reportFormat,
+        reportFormat: reportData.reportFormat,
         duration: reportData.duration,
-        period:  reportData.period,
-        generatedDate:  reportData.generatedDate,
-        recipients:  reportData.recipients,
-        schedule:  reportData.schedule,
-        nextRun:  reportData.nextRun,
-        status:  reportData.status,
+        period: reportData.period,
+        generatedDate: reportData.generatedDate,
+        recipients: reportData.recipients,
+        schedule: reportData.schedule,
+        nextRun: reportData.nextRun,
+        status: reportData.status,
       });
     }
   }, [reportData]);
-  
+
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -102,7 +102,7 @@ export default function Reports() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
       let response;
       if (reportData) {
@@ -123,15 +123,15 @@ export default function Reports() {
       setError(err?.data?.message || "Failed to submit report data");
     }
   };
-  
+
 
   const handleDelete = async (id) => {
-      try {
-        await deleteReports(id).unwrap();
-        toast.warn(t('translation:reportDeleted'));
-      } catch (err) {
-        console.error('Delete error:', err);
-      }
+    try {
+      await deleteReports(id).unwrap();
+      toast.warn(t('translation:reportDeleted'));
+    } catch (err) {
+      console.error('Delete error:', err);
+    }
   };
 
   const { mode } = useSelector((state) => state.theme);
@@ -159,12 +159,12 @@ export default function Reports() {
         ? "bg-red-900 text-red-300"
         : "bg-red-100 text-red-800",
     };
-  
+
     return statusColors[status] || (isDark
       ? "bg-gray-800 text-gray-300"
       : "bg-gray-100 text-gray-800");
   };
-  
+
 
   // Format badge color mapping
   const getFormatColor = (format) => {
@@ -177,29 +177,29 @@ export default function Reports() {
   }
 
   // Filters
-const filteredFinacialReports = data?.data?.filter(
-  (report) =>
-    report.type === "financial" &&
-    report.reportName.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  const filteredFinacialReports = data?.data?.filter(
+    (report) =>
+      report.type === "financial" &&
+      report.reportName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-const filteredOperationalReports = data?.data?.filter(
-  (report) =>
-    report.type === "operational" &&
-    report.reportName.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  const filteredOperationalReports = data?.data?.filter(
+    (report) =>
+      report.type === "operational" &&
+      report.reportName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-const filteredClinicalReports = data?.data?.filter(
-  (report) =>
-    report.type === "clinical" &&
-    report.reportName.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  const filteredClinicalReports = data?.data?.filter(
+    (report) =>
+      report.type === "clinical" &&
+      report.reportName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-const filteredScheduledReports = data?.data?.filter(
-  (report) =>
-    report.type === "scheduled" &&
-    report.reportName.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  const filteredScheduledReports = data?.data?.filter(
+    (report) =>
+      report.type === "scheduled" &&
+      report.reportName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
 
   return (
@@ -243,29 +243,29 @@ const filteredScheduledReports = data?.data?.filter(
                       />
                     </div>
                     <div className="flex space-x-2">
-                            <Button
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => {
-                                const headers = ["Report Name", "Period", "Generated Date", "Status"];
-                                const exportData = filteredFinacialReports.map((report) => [
-                                  report.reportName,
-                                  report.period,
-                                  formatDate(report.generatedDate),
-                                  report.status,
-                                  ]);
-                            
-                                  downloadPdf({
-                                    title: "Financial Report",
-                                    headers,
-                                    data: exportData,
-                                    fileName: "financial_report.pdf",
-                                    });
-                                  }}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                      </div>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          const headers = ["Report Name", "Period", "Generated Date", "Status"];
+                          const exportData = filteredFinacialReports.map((report) => [
+                            report.reportName,
+                            report.period,
+                            formatDate(report.generatedDate),
+                            report.status,
+                          ]);
+
+                          downloadPdf({
+                            title: "Financial Report",
+                            headers,
+                            data: exportData,
+                            fileName: "financial_report.pdf",
+                          });
+                        }}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
@@ -282,31 +282,31 @@ const filteredScheduledReports = data?.data?.filter(
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                 {filteredFinacialReports?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center">
-                        {t("reports.noReportsFound", "No reports found.")}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredFinacialReports?.map((report) => (
-                  <TableRow key={report._id}>
-                    <TableCell className="font-medium">{report.reportName}</TableCell>
-                    <TableCell>{report.period}</TableCell>
-                    <TableCell>{formatDate(report.generatedDate)}</TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(report.status)}>{translateValue('status', report.status, t)}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getFormatColor(report.reportFormat)}>{report.reportFormat}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
+                    {filteredFinacialReports?.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center">
+                          {t("reports.noReportsFound", "No reports found.")}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredFinacialReports?.map((report) => (
+                        <TableRow key={report._id}>
+                          <TableCell className="font-medium">{report.reportName}</TableCell>
+                          <TableCell>{report.period}</TableCell>
+                          <TableCell>{formatDate(report.generatedDate)}</TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(report.status)}>{translateValue('status', report.status, t)}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getFormatColor(report.reportFormat)}>{report.reportFormat}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
                             <div className="flex justify-end space-x-2">
-                              <Button variant="outline" size="icon" 
-                              onClick={() => {
-                                setReportData(report); 
-                                setShowGenerateReport(true);
-                              }}
+                              <Button variant="outline" size="icon"
+                                onClick={() => {
+                                  setReportData(report);
+                                  setShowGenerateReport(true);
+                                }}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -314,10 +314,10 @@ const filteredScheduledReports = data?.data?.filter(
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
-                    </TableCell>
-                    </TableRow>
-                    ))
-                  )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -336,37 +336,37 @@ const filteredScheduledReports = data?.data?.filter(
                   <div className="flex items-center space-x-2">
                     <div className="relative">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                      <Input type="search" 
-                      placeholder={t("reports.searchPlaceholder", "Search reports...")} 
-                      className="pl-8 w-full border-2 border-gray-400 h-10 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                      <Input type="search"
+                        placeholder={t("reports.searchPlaceholder", "Search reports...")}
+                        className="pl-8 w-full border-2 border-gray-400 h-10 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
                     </div>
                     <div className="flex space-x-2">
-                            <Button
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => {
-                                const headers = ["Report Name", "Period", "Generated Date", "Status"];
-                                const exportData = filteredOperationalReports.map((report) => [
-                                  report.reportName,
-                                  report.period,
-                                  formatDate(report.generatedDate),
-                                  report.status,
-                                  ]);
-                            
-                                  downloadPdf({
-                                    title: "Operational Report",
-                                    headers,
-                                    data: exportData,
-                                    fileName: "operational_report.pdf",
-                                    });
-                                  }}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                        </div>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          const headers = ["Report Name", "Period", "Generated Date", "Status"];
+                          const exportData = filteredOperationalReports.map((report) => [
+                            report.reportName,
+                            report.period,
+                            formatDate(report.generatedDate),
+                            report.status,
+                          ]);
+
+                          downloadPdf({
+                            title: "Operational Report",
+                            headers,
+                            data: exportData,
+                            fileName: "operational_report.pdf",
+                          });
+                        }}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
@@ -383,31 +383,31 @@ const filteredScheduledReports = data?.data?.filter(
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                  {filteredOperationalReports?.length === 0 ? (
-  <TableRow>
-    <TableCell colSpan={6} className="text-center">
-      {t("reports.noReportsFound", "No reports found.")}
-    </TableCell>
-  </TableRow>
-                  ) : (
-                  filteredOperationalReports?.map((report) => (
-                  <TableRow key={report._id}>
-                    <TableCell className="font-medium">{report.reportName}</TableCell>
-                    <TableCell>{report.period}</TableCell>
-                    <TableCell>{formatDate(report.generatedDate)}</TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(report.status)}>{translateValue('status', report.status, t)}</Badge>
-                    </TableCell>
-                        <TableCell>
-                          <Badge className={getFormatColor(report.reportFormat)}>{report.reportFormat}</Badge>
+                    {filteredOperationalReports?.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center">
+                          {t("reports.noReportsFound", "No reports found.")}
                         </TableCell>
-                        <TableCell className="text-right">
+                      </TableRow>
+                    ) : (
+                      filteredOperationalReports?.map((report) => (
+                        <TableRow key={report._id}>
+                          <TableCell className="font-medium">{report.reportName}</TableCell>
+                          <TableCell>{report.period}</TableCell>
+                          <TableCell>{formatDate(report.generatedDate)}</TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(report.status)}>{translateValue('status', report.status, t)}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getFormatColor(report.reportFormat)}>{report.reportFormat}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
                             <div className="flex justify-end space-x-2">
-                              <Button variant="outline" size="icon" 
-                              onClick={() => {
-                                setReportData(report); 
-                                setShowGenerateReport(true);
-                              }}
+                              <Button variant="outline" size="icon"
+                                onClick={() => {
+                                  setReportData(report);
+                                  setShowGenerateReport(true);
+                                }}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -415,10 +415,10 @@ const filteredScheduledReports = data?.data?.filter(
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
-                    </TableCell>
-                      </TableRow>
-                    ))
-                  )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
 
                   </TableBody>
                 </Table>
@@ -438,38 +438,38 @@ const filteredScheduledReports = data?.data?.filter(
                   <div className="flex items-center space-x-2">
                     <div className="relative">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                      <Input 
-                      type="search" 
-                      placeholder={t("reports.searchPlaceholder", "Search reports...")}
-                      className="pl-8 w-full border-2 border-gray-400 h-10 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      <Input
+                        type="search"
+                        placeholder={t("reports.searchPlaceholder", "Search reports...")}
+                        className="pl-8 w-full border-2 border-gray-400 h-10 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                       />
                     </div>
                     <div className="flex space-x-2">
-                            <Button
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => {
-                                const headers = ["Report Name", "Period", "Generated Date", "Status"];
-                                const exportData = filteredClinicalReports.map((report) => [
-                                  report.reportName,
-                                  report.period,
-                                  formatDate(report.generatedDate),
-                                  report.status,
-                                  ]);
-                            
-                                  downloadPdf({
-                                    title: "Clinical Report",
-                                    headers,
-                                    data: exportData,
-                                    fileName: "clinical_report.pdf",
-                                    });
-                                  }}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </div>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          const headers = ["Report Name", "Period", "Generated Date", "Status"];
+                          const exportData = filteredClinicalReports.map((report) => [
+                            report.reportName,
+                            report.period,
+                            formatDate(report.generatedDate),
+                            report.status,
+                          ]);
+
+                          downloadPdf({
+                            title: "Clinical Report",
+                            headers,
+                            data: exportData,
+                            fileName: "clinical_report.pdf",
+                          });
+                        }}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
@@ -494,24 +494,24 @@ const filteredScheduledReports = data?.data?.filter(
                         </TableCell>
                       </TableRow>
                     ) : (
-                    filteredClinicalReports?.map((report) => (
-                      <TableRow key={report._id}>
-                        <TableCell className="font-medium">{report.reportName}</TableCell>
-                        <TableCell>{report.period}</TableCell>
-                        <TableCell>{formatDate(report.generatedDate)}</TableCell>
-                        <TableCell>
-                          <Badge className={getStatusColor(report.status)}>{translateValue('status', report.status, t)}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={getFormatColor(report.reportFormat)}>{report.reportFormat}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
+                      filteredClinicalReports?.map((report) => (
+                        <TableRow key={report._id}>
+                          <TableCell className="font-medium">{report.reportName}</TableCell>
+                          <TableCell>{report.period}</TableCell>
+                          <TableCell>{formatDate(report.generatedDate)}</TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(report.status)}>{translateValue('status', report.status, t)}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getFormatColor(report.reportFormat)}>{report.reportFormat}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
                             <div className="flex justify-end space-x-2">
-                              <Button variant="outline" size="icon" 
-                              onClick={() => {
-                                setReportData(report); 
-                                setShowGenerateReport(true);
-                              }}
+                              <Button variant="outline" size="icon"
+                                onClick={() => {
+                                  setReportData(report);
+                                  setShowGenerateReport(true);
+                                }}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -519,7 +519,7 @@ const filteredScheduledReports = data?.data?.filter(
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
-                    </TableCell>
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
@@ -541,38 +541,38 @@ const filteredScheduledReports = data?.data?.filter(
                   <div className="flex items-center space-x-2">
                     <div className="relative">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                      <Input 
-                      type="search" 
-                      placeholder={t("reports.searchPlaceholder", "Search scheduled reports...")} 
-                      className="pl-8 w-full border-2 border-gray-400 h-10 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)} 
+                      <Input
+                        type="search"
+                        placeholder={t("reports.searchPlaceholder", "Search scheduled reports...")}
+                        className="pl-8 w-full border-2 border-gray-400 h-10 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                       />
                     </div>
                     <div className="flex space-x-2">
-                            <Button
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => {
-                                const headers = ["Report Name", "Period", "Generated Date", "Status"];
-                                const exportData = filteredScheduledReports.map((report) => [
-                                  report.reportName,
-                                  report.period,
-                                  formatDate(report.generatedDate),
-                                  report.status,
-                                  ]);
-                            
-                                  downloadPdf({
-                                    title: "Scheduled Report",
-                                    headers,
-                                    data: exportData,
-                                    fileName: "scheduled_report.pdf",
-                                    });
-                                  }}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </div>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          const headers = ["Report Name", "Period", "Generated Date", "Status"];
+                          const exportData = filteredScheduledReports.map((report) => [
+                            report.reportName,
+                            report.period,
+                            formatDate(report.generatedDate),
+                            report.status,
+                          ]);
+
+                          downloadPdf({
+                            title: "Scheduled Report",
+                            headers,
+                            data: exportData,
+                            fileName: "scheduled_report.pdf",
+                          });
+                        }}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
@@ -590,32 +590,32 @@ const filteredScheduledReports = data?.data?.filter(
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                  {filteredScheduledReports?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center">
-                        {t("reports.noReportsFound", "No reports found.")}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                  filteredScheduledReports?.map((report) => (
-                    <TableRow key={report._id}>
-                      <TableCell className="font-medium">{report.reportName}</TableCell>
-                      <TableCell>{report.schedule}</TableCell>
-                      <TableCell>{formatDate(report.nextRun)}</TableCell>
-                      <TableCell>{report.recipients}</TableCell>
-                      <TableCell>
-                        <Badge className={getFormatColor(report.reportFormat)}>{report.reportFormat}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(report.status)}>{translateValue('status', report.status, t)}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
+                    {filteredScheduledReports?.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center">
+                          {t("reports.noReportsFound", "No reports found.")}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredScheduledReports?.map((report) => (
+                        <TableRow key={report._id}>
+                          <TableCell className="font-medium">{report.reportName}</TableCell>
+                          <TableCell>{report.schedule}</TableCell>
+                          <TableCell>{formatDate(report.nextRun)}</TableCell>
+                          <TableCell>{report.recipients}</TableCell>
+                          <TableCell>
+                            <Badge className={getFormatColor(report.reportFormat)}>{report.reportFormat}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(report.status)}>{translateValue('status', report.status, t)}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
                             <div className="flex justify-end space-x-2">
-                              <Button variant="outline" size="icon" 
-                              onClick={() => {
-                                setReportData(report); 
-                                setShowGenerateReport(true);
-                              }}
+                              <Button variant="outline" size="icon"
+                                onClick={() => {
+                                  setReportData(report);
+                                  setShowGenerateReport(true);
+                                }}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -623,10 +623,10 @@ const filteredScheduledReports = data?.data?.filter(
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
-                    </TableCell>
-                      </TableRow>
-                          ))
-                        )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -753,147 +753,147 @@ const filteredScheduledReports = data?.data?.filter(
       </div>
       {/* Generate Report Dialog */}
       <Dialog open={showGenerateReport} onOpenChange={setShowGenerateReport}>
-      <DialogContent className="sm:max-w-[600px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">{t("reports.generateReportTitle", "Generate New Report")}</DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground">
-              {t("reports.generateReportSub", "Fill in the details below to generate your custom report.")}
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-[600px]">
+          <form onSubmit={handleSubmit}>
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold">{t("reports.generateReportTitle", "Generate New Report")}</DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground">
+                {t("reports.generateReportSub", "Fill in the details below to generate your custom report.")}
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="reportName" className="text-right">{t("reports.reportName", "Report Name")}</Label>
-              <Input
-                id="reportName"
-                value={formData.reportName}
-                onChange={(e) => handleChange('reportName', e.target.value)}
-                className="col-span-3 border border-gray-400 rounded-lg p-1"
-                placeholder={t("reports.reportNamePlaceholder", "E.g. Q1 Performance Overview")}
-              />
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="reportName" className="text-right">{t("reports.reportName", "Report Name")}</Label>
+                <Input
+                  id="reportName"
+                  value={formData.reportName}
+                  onChange={(e) => handleChange('reportName', e.target.value)}
+                  className="col-span-3 border border-gray-400 rounded-lg p-1"
+                  placeholder={t("reports.reportNamePlaceholder", "E.g. Q1 Performance Overview")}
+                />
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="type" className="text-right">{t("reports.reportType", "Report Type")}</Label>
+                <Select onValueChange={(val) => handleChange('type', val)}>
+                  <SelectTrigger id="type" className="col-span-3 border border-gray-400 rounded-lg p-1">
+                    <SelectValue placeholder={t("reports.chooseType", "Choose type")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="financial">{t("reports.financial", "Financial")}</SelectItem>
+                    <SelectItem value="operational">{t("reports.operational", "Operational")}</SelectItem>
+                    <SelectItem value="clinical">{t("reports.clinical", "Clinical")}</SelectItem>
+                    <SelectItem value="scheduled">{t("reports.scheduled", "Scheduled")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="reportFormat" className="text-right">{t("reports.format", "Format")}</Label>
+                <Select onValueChange={(val) => handleChange('reportFormat', val)}>
+                  <SelectTrigger id="reportFormat" className="col-span-3 border border-gray-400 rounded-lg p-1">
+                    <SelectValue placeholder={t("reports.selectFormat", "Select format")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pdf">{t('translation:pdf')}</SelectItem>
+                    <SelectItem value="excel">{t('translation:excel')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">{t("reports.duration", "Duration")}</Label>
+                <Select onValueChange={(val) => handleChange('duration', val)}>
+                  <SelectTrigger className="col-span-3 border border-gray-400 rounded-lg p-1">
+                    <SelectValue placeholder={t("reports.selectDuration", "Select duration")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">{t("reports.durations.monthly", "Monthly")}</SelectItem>
+                    <SelectItem value="quarterly">{t("reports.durations.quarterly", "Quarterly")}</SelectItem>
+                    <SelectItem value="yearly">{t("reports.durations.yearly", "Yearly")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">{t("reports.period", "Period")}</Label>
+                <Input
+                  type="date"
+                  value={formData.period}
+                  onChange={(e) => handleChange('period', e.target.value)}
+                  className="col-span-3 border border-gray-400 rounded-lg p-1"
+                />
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">{t("reports.generatedDate", "Generated Date")}</Label>
+                <Input
+                  type="date"
+                  value={formData.generatedDate}
+                  onChange={(e) => handleChange('generatedDate', e.target.value)}
+                  className="col-span-3 border border-gray-400 rounded-lg p-1"
+                />
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">{t("reports.recipients", "Recipients")}</Label>
+                <Input
+                  type="number"
+                  value={formData.recipients}
+                  onChange={(e) => handleChange('recipients', e.target.value)}
+                  className="col-span-3 border border-gray-400 rounded-lg p-1"
+                />
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">{t("reports.schedule", "Schedule")}</Label>
+                <Input
+                  value={formData.schedule}
+                  onChange={(e) => handleChange('schedule', e.target.value)}
+                  className="col-span-3 border border-gray-400 rounded-lg p-1"
+                />
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">{t("reports.nextRun", "Next Run")}</Label>
+                <Input
+                  type="date"
+                  value={formData.nextRun}
+                  onChange={(e) => handleChange('nextRun', e.target.value)}
+                  className="col-span-3 border border-gray-400 rounded-lg p-1"
+                />
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">{t("common.status", "Status")}</Label>
+                <Select onValueChange={(val) => handleChange('status', val)}>
+                  <SelectTrigger className="col-span-3 border border-gray-400 rounded-lg p-1">
+                    <SelectValue placeholder={t("inventory.selectStatus", "Select status")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Processing">{t("reports.statuses.processing", "Processing")}</SelectItem>
+                    <SelectItem value="Completed">{t("status.completed", "Completed")}</SelectItem>
+                    <SelectItem value="Scheduled">{t("status.scheduled", "Scheduled")}</SelectItem>
+                    <SelectItem value="Active">{t("insurance.status.active", "Active")}</SelectItem>
+                    <SelectItem value="Paused">{t("reports.statuses.paused", "Paused")}</SelectItem>
+                    <SelectItem value="Failed">{t("reports.statuses.failed", "Failed")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">{t("reports.reportType", "Report Type")}</Label>
-              <Select onValueChange={(val) => handleChange('type', val)}>
-                <SelectTrigger id="type" className="col-span-3 border border-gray-400 rounded-lg p-1">
-                  <SelectValue placeholder={t("reports.chooseType", "Choose type")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="financial">{t("reports.financial", "Financial")}</SelectItem>
-                  <SelectItem value="operational">{t("reports.operational", "Operational")}</SelectItem>
-                  <SelectItem value="clinical">{t("reports.clinical", "Clinical")}</SelectItem>
-                  <SelectItem value="scheduled">{t("reports.scheduled", "Scheduled")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="reportFormat" className="text-right">{t("reports.format", "Format")}</Label>
-              <Select onValueChange={(val) => handleChange('reportFormat', val)}>
-                <SelectTrigger id="reportFormat" className="col-span-3 border border-gray-400 rounded-lg p-1">
-                  <SelectValue placeholder={t("reports.selectFormat", "Select format")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pdf">{t('translation:pdf')}</SelectItem>
-                  <SelectItem value="excel">{t('translation:excel')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">{t("reports.duration", "Duration")}</Label>
-              <Select onValueChange={(val) => handleChange('duration', val)}>
-                <SelectTrigger className="col-span-3 border border-gray-400 rounded-lg p-1">
-                  <SelectValue placeholder={t("reports.selectDuration", "Select duration")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">{t("reports.durations.monthly", "Monthly")}</SelectItem>
-                  <SelectItem value="quarterly">{t("reports.durations.quarterly", "Quarterly")}</SelectItem>
-                  <SelectItem value="yearly">{t("reports.durations.yearly", "Yearly")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">{t("reports.period", "Period")}</Label>
-              <Input
-                type="date"
-                value={formData.period}
-                onChange={(e) => handleChange('period', e.target.value)}
-                className="col-span-3 border border-gray-400 rounded-lg p-1"
-              />
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">{t("reports.generatedDate", "Generated Date")}</Label>
-              <Input
-                type="date"
-                value={formData.generatedDate}
-                onChange={(e) => handleChange('generatedDate', e.target.value)}
-                className="col-span-3 border border-gray-400 rounded-lg p-1"
-              />
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">{t("reports.recipients", "Recipients")}</Label>
-              <Input
-                type="number"
-                value={formData.recipients}
-                onChange={(e) => handleChange('recipients', e.target.value)}
-                className="col-span-3 border border-gray-400 rounded-lg p-1"
-              />
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">{t("reports.schedule", "Schedule")}</Label>
-              <Input
-                value={formData.schedule}
-                onChange={(e) => handleChange('schedule', e.target.value)}
-                className="col-span-3 border border-gray-400 rounded-lg p-1"
-              />
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">{t("reports.nextRun", "Next Run")}</Label>
-              <Input
-                type="date"
-                value={formData.nextRun}
-                onChange={(e) => handleChange('nextRun', e.target.value)}
-                className="col-span-3 border border-gray-400 rounded-lg p-1"
-              />
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">{t("common.status", "Status")}</Label>
-              <Select onValueChange={(val) => handleChange('status', val)}>
-                <SelectTrigger className="col-span-3 border border-gray-400 rounded-lg p-1">
-                  <SelectValue placeholder={t("inventory.selectStatus", "Select status")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Processing">{t("reports.statuses.processing", "Processing")}</SelectItem>
-                  <SelectItem value="Completed">{t("status.completed", "Completed")}</SelectItem>
-                  <SelectItem value="Scheduled">{t("status.scheduled", "Scheduled")}</SelectItem>
-                  <SelectItem value="Active">{t("insurance.status.active", "Active")}</SelectItem>
-                  <SelectItem value="Paused">{t("reports.statuses.paused", "Paused")}</SelectItem>
-                  <SelectItem value="Failed">{t("reports.statuses.failed", "Failed")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setShowGenerateReport(false)}>
-              {t("common.cancel", "Cancel")}
-            </Button>
-            <Button type="submit" className="bg-teal-500 hover:bg-teal-600">
-              {t("reports.saveReport", "Save Report")}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowGenerateReport(false)}>
+                {t("common.cancel", "Cancel")}
+              </Button>
+              <Button type="submit" className="bg-teal-500 hover:bg-teal-600">
+                {t("reports.saveReport", "Save Report")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
 
 
@@ -1135,7 +1135,7 @@ const filteredScheduledReports = data?.data?.filter(
           </div>
         </CardContent>
       </Card> */}
-     
+
       {/* <div className="mb-6">
         <Card className="border-teal-500 dark:border-teal-700">
           <CardHeader className="pb-2">
