@@ -22,8 +22,8 @@ const AllPermission = () => {
     const { data: allPermissions } = useGetAllPermissionsQuery();
 
     useEffect(() => {
-        setPermissions(allPermissions);
-        setFilteredPermissions(allPermissions);
+        setPermissions(allPermissions || []);
+        setFilteredPermissions(allPermissions || []);
     }, [allPermissions]);
 
     const handlePermissionEntriesChange = (value) => {

@@ -352,7 +352,7 @@ export default function MealPlans() {
                   </TableHeader>
                   <TableBody>
                     {filteredMealPlans?.length > 0 ? (
-                      filteredMealPlans.map((plan) => (
+                      filteredMealPlans?.map((plan) => (
                         <TableRow key={plan.id}>
                           <TableCell className="font-medium">{plan.name}</TableCell>
                           <TableCell>{plan.type === "Basic" ? t("mealPlans.types.basic", "Basic") : plan.type === "Regular" ? t("mealPlans.types.regular", "Regular") : plan.type === "Special" ? t("mealPlans.types.special", "Special") : plan.type === "Super Special" ? t("mealPlans.types.superSpecial", "Super Special") : plan.type}</TableCell>
