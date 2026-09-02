@@ -18,7 +18,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/UI/Table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/UI/Select"
 import  Textarea  from "../components/UI/TextArea"
-import  Checkbox  from "../components/UI/Checkbox"
+import  Checkbox  from "../components/UI/CheckBox"
 import {
   Plus,
   Search,

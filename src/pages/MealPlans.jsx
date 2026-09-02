@@ -16,7 +16,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/UI/Table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/UI/Select"
 import { Plus, Search, Edit, Trash2, FileText, DollarSign, Calendar, Clock, AlertCircle } from "lucide-react"
-import Checkbox from "../components/UI/Checkbox"
+import Checkbox from "../components/UI/CheckBox"
 import {
   useGetMealPlansQuery,
   useGetPatientMealQuery,
