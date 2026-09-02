@@ -1,0 +1,20 @@
+{
+  "title": "Blood Bank Management",
+  "searchPlaceholder": "Search blood units, donors, or requests...",
+  "newDonation": "New Donation",
+  "newRequest": "New Request",
+  "inventory": "Blood Inventory",
+  "inventorySub": "Current stock levels by blood type",
+  "donations": "Donations",
+  "requests": "Requests",
+  "donorName": "Donor Name",
+  "bloodType": "Blood Type",
+  "units": "Units",
+  "availableUnits": "Available Units",
+  "donationDate": "Donation Date",
+  "requestDate": "Request Date",
+  "urgency": "Urgency",
+  "normal": "Normal",
+  "high": "High",
+  "critical": "Critical"
+}

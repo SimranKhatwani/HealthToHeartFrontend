@@ -1,0 +1,21 @@
+{
+  "title": "Opérations et chirurgie",
+  "searchPlaceholder": "Rechercher des opérations par patient, chirurgien ou procédure...",
+  "scheduleOperation": "Planifier une opération",
+  "operationDirectory": "Programme des opérations",
+  "operationDirectorySub": "Procédures chirurgicales prévues et disponibilité des blocs",
+  "procedure": "Procédure",
+  "surgeon": "Chirurgien",
+  "theater": "Bloc opératoire",
+  "anesthesiaType": "Type d'anesthésie",
+  "organ": "Organe / Zone",
+  "scheduledDate": "Date prévue",
+  "local": "Locale",
+  "general": "Générale",
+  "regional": "Régionale",
+  "none": "Aucune",
+  "heart": "Cœur",
+  "brain": "Cerveau",
+  "lungs": "Poumons",
+  "kidney": "Rein"
+}

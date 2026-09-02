@@ -1,0 +1,20 @@
+{
+  "scheduled": "Planifié",
+  "inprogress": "En cours",
+  "completed": "Terminé",
+  "confirmed": "Confirmé",
+  "pending": "En attente",
+  "instock": "En stock",
+  "lowstock": "Stock faible",
+  "outofstock": "Rupture de stock",
+  "available": "Disponible",
+  "occupied": "Occupé",
+  "active": "Actif",
+  "inactive": "Inactif",
+  "approved": "Approuvé",
+  "rejected": "Rejeté",
+  "admitted": "Hospitalisé",
+  "discharged": "Sorti",
+  "deceased": "Décédé",
+  "inconsultation": "En consultation"
+}

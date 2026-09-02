@@ -1,0 +1,8 @@
+{
+  "title": "Permission Management",
+  "searchPlaceholder": "Search permissions by name...",
+  "addPermission": "Add Permission",
+  "permissionName": "Permission Name",
+  "module": "Module",
+  "description": "Description"
+}

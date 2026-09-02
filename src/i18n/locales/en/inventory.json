@@ -1,0 +1,39 @@
+{
+  "title": "Inventory",
+  "searchPlaceholder": "Search inventory items or stock...",
+  "addItem": "Add Item",
+  "addItemTitle": "Add Inventory Item",
+  "addItemSub": "Enter the details of the new inventory item.",
+  "quantity": "Quantity",
+  "price": "Price",
+  "supplier": "Supplier",
+  "minStock": "Min Stock",
+  "category": "Category",
+  "unit": "Unit",
+  "selectCategory": "Select category",
+  "selectUnit": "Select unit",
+  "selectStatus": "Select status",
+  "categories": {
+    "ppe": "PPE",
+    "medicalSupplies": "Medical Supplies",
+    "surgicalTools": "Surgical Tools"
+  },
+  "units": {
+    "pieces": "pieces",
+    "boxes": "boxes",
+    "pairs": "pairs",
+    "bags": "bags",
+    "vials": "vials"
+  },
+  "items": "Inventory Items",
+  "inventoryItems": "Inventory Items",
+  "overview": "Inventory Overview",
+  "overviewSub": "Current stock levels and inventory status",
+  "itemName": "Item Name",
+  "stock": "Stock Quantity",
+  "unitPrice": "Unit Price ($)",
+  "reorderLevel": "Reorder Level",
+  "instock": "In Stock",
+  "lowstock": "Low Stock",
+  "outofstock": "Out of Stock"
+}

@@ -1,0 +1,32 @@
+{
+  "title": "Pharmacy",
+  "searchPlaceholder": "Search medications or prescriptions...",
+  "addMedication": "Add Medication",
+  "addMedicationTitle": "Add Medication",
+  "addMedicationSub": "Enter the details of the new medication.",
+  "categories": {
+    "antibiotic": "Antibiotic",
+    "analgesic": "Analgesic",
+    "bronchodilator": "Bronchodilator",
+    "hormone": "Hormone"
+  },
+  "dosage": "Dosage",
+  "form": "Form",
+  "selectForm": "Select form",
+  "forms": {
+    "tablet": "Tablet",
+    "capsule": "Capsule",
+    "syrup": "Syrup",
+    "injection": "Injection",
+    "inhaler": "Inhaler",
+    "cream": "Cream"
+  },
+  "expiryDate": "Expiry Date",
+  "manufacturer": "Manufacturer",
+  "dispenseMedication": "Dispense Medication",
+  "medications": "Medications Directory",
+  "prescriptions": "Prescriptions",
+  "medicationName": "Medication Name",
+  "stockQuantity": "Stock Quantity",
+  "price": "Price ($)"
+}

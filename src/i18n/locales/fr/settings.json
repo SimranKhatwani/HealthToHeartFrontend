@@ -1,0 +1,10 @@
+{
+  "title": "Paramètres du système",
+  "general": "Paramètres généraux",
+  "hospitalName": "Nom de l'hôpital",
+  "email": "E-mail du système",
+  "phone": "Téléphone de contact",
+  "currency": "Symbole de devise",
+  "theme": "Thème de l'application",
+  "language": "Langue du système"
+}

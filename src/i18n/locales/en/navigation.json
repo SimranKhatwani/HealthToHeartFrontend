@@ -1,0 +1,21 @@
+{
+  "dashboard": "Dashboard",
+  "patients": "Patients",
+  "doctors": "Doctors",
+  "staff": "Staff",
+  "operations": "Operations",
+  "bloodBank": "Blood Bank",
+  "insurance": "Insurance",
+  "inventory": "Inventory",
+  "pharmacy": "Pharmacy",
+  "rooms": "Rooms",
+  "laboratory": "Laboratory",
+  "mealPlans": "Meal Plans",
+  "appointments": "Appointments",
+  "billing": "Billing",
+  "reports": "Reports",
+  "permissions": "Permissions",
+  "roles": "Roles",
+  "settings": "Settings",
+  "logout": "Logout"
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Facturation et factures",
+  "searchPlaceholder": "Rechercher des factures par patient ou ID...",
+  "createInvoice": "Créer une facture",
+  "invoices": "Factures",
+  "payments": "Paiements",
+  "invoiceId": "ID de facture",
+  "totalAmount": "Montant total ($)",
+  "paidAmount": "Montant payé ($)",
+  "balance": "Solde dû ($)",
+  "paymentMethod": "Mode de paiement",
+  "cash": "Espèces",
+  "card": "Carte de crédit",
+  "insurance": "Assurance",
+  "online": "Virement en ligne"
+}

@@ -1,0 +1,10 @@
+{
+  "title": "System Settings",
+  "general": "General Settings",
+  "hospitalName": "Hospital Name",
+  "email": "System Email",
+  "phone": "Contact Phone",
+  "currency": "Currency Symbol",
+  "theme": "App Theme",
+  "language": "System Language"
+}

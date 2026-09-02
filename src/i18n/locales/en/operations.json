@@ -1,0 +1,21 @@
+{
+  "title": "Operations & Surgeries",
+  "searchPlaceholder": "Search operations by patient, surgeon, or procedure...",
+  "scheduleOperation": "Schedule Operation",
+  "operationDirectory": "Operations Schedule",
+  "operationDirectorySub": "Scheduled surgical procedures and theater availability",
+  "procedure": "Procedure",
+  "surgeon": "Surgeon",
+  "theater": "Operating Theater",
+  "anesthesiaType": "Anesthesia Type",
+  "organ": "Organ / Area",
+  "scheduledDate": "Scheduled Date",
+  "local": "Local",
+  "general": "General",
+  "regional": "Regional",
+  "none": "None",
+  "heart": "Heart",
+  "brain": "Brain",
+  "lungs": "Lungs",
+  "kidney": "Kidney"
+}

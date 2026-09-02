@@ -1,0 +1,39 @@
+{
+  "title": "Inventaire",
+  "searchPlaceholder": "Rechercher des articles d'inventaire ou des transactions...",
+  "addItem": "Ajouter un article",
+  "addItemTitle": "Ajouter un article d'inventaire",
+  "addItemSub": "Saisissez les détails du nouvel article d'inventaire.",
+  "quantity": "Quantité",
+  "price": "Prix",
+  "supplier": "Fournisseur",
+  "minStock": "Stock minimum",
+  "category": "Catégorie",
+  "unit": "Unité",
+  "selectCategory": "Sélectionner la catégorie",
+  "selectUnit": "Sélectionner l'unité",
+  "selectStatus": "Sélectionner le statut",
+  "categories": {
+    "ppe": "EPI",
+    "medicalSupplies": "Fournitures médicales",
+    "surgicalTools": "Outils chirurgicaux"
+  },
+  "units": {
+    "pieces": "pièces",
+    "boxes": "boîtes",
+    "pairs": "paires",
+    "bags": "sacs",
+    "vials": "flacons"
+  },
+  "items": "Articles d'inventaire",
+  "inventoryItems": "Articles d'inventaire",
+  "overview": "Aperçu de l'inventaire",
+  "overviewSub": "Niveaux de stock actuels et statut de l'inventaire",
+  "itemName": "Nom de l'article",
+  "stock": "Quantité en stock",
+  "unitPrice": "Prix unitaire ($)",
+  "reorderLevel": "Niveau de réapprovisionnement",
+  "instock": "En stock",
+  "lowstock": "Stock faible",
+  "outofstock": "Rupture de stock"
+}

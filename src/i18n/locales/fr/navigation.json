@@ -1,0 +1,21 @@
+{
+  "dashboard": "Tableau de bord",
+  "patients": "Patients",
+  "doctors": "Médecins",
+  "staff": "Personnel",
+  "operations": "Opérations",
+  "bloodBank": "Banque de sang",
+  "insurance": "Assurance",
+  "inventory": "Inventaire",
+  "pharmacy": "Pharmacie",
+  "rooms": "Chambres",
+  "laboratory": "Laboratoire",
+  "mealPlans": "Plans de repas",
+  "appointments": "Rendez-vous",
+  "billing": "Facturation",
+  "reports": "Rapports",
+  "permissions": "Autorisations",
+  "roles": "Rôles",
+  "settings": "Paramètres",
+  "logout": "Déconnexion"
+}

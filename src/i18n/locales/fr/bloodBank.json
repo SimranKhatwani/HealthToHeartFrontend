@@ -1,0 +1,20 @@
+{
+  "title": "Gestion de la banque de sang",
+  "searchPlaceholder": "Rechercher des poches de sang, donneurs ou demandes...",
+  "newDonation": "Nouveau don",
+  "newRequest": "Nouvelle demande",
+  "inventory": "Inventaire du sang",
+  "inventorySub": "Niveaux de stock actuels par groupe sanguin",
+  "donations": "Dons",
+  "requests": "Demandes",
+  "donorName": "Nom du donneur",
+  "bloodType": "Groupe sanguin",
+  "units": "Unités",
+  "availableUnits": "Unités disponibles",
+  "donationDate": "Date du don",
+  "requestDate": "Date de la demande",
+  "urgency": "Urgence",
+  "normal": "Normale",
+  "high": "Élevée",
+  "critical": "Critique"
+}

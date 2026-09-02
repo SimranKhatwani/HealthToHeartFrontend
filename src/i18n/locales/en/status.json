@@ -1,0 +1,20 @@
+{
+  "scheduled": "Scheduled",
+  "inprogress": "In Progress",
+  "completed": "Completed",
+  "confirmed": "Confirmed",
+  "pending": "Pending",
+  "instock": "In Stock",
+  "lowstock": "Low Stock",
+  "outofstock": "Out of Stock",
+  "available": "Available",
+  "occupied": "Occupied",
+  "active": "Active",
+  "inactive": "Inactive",
+  "approved": "Approved",
+  "rejected": "Rejected",
+  "admitted": "Admitted",
+  "discharged": "Discharged",
+  "deceased": "Deceased",
+  "inconsultation": "In Consultation"
+}

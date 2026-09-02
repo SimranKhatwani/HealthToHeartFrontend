@@ -1,0 +1,32 @@
+{
+  "title": "Pharmacie",
+  "searchPlaceholder": "Rechercher des médicaments ou des ordonnances...",
+  "addMedication": "Ajouter un médicament",
+  "addMedicationTitle": "Ajouter un médicament",
+  "addMedicationSub": "Saisissez les détails du nouveau médicament.",
+  "categories": {
+    "antibiotic": "Antibiotique",
+    "analgesic": "Antalgique",
+    "bronchodilator": "Bronchodilatateur",
+    "hormone": "Hormone"
+  },
+  "dosage": "Dosage",
+  "form": "Forme",
+  "selectForm": "Sélectionner la forme",
+  "forms": {
+    "tablet": "Comprimé",
+    "capsule": "Gélule",
+    "syrup": "Sirop",
+    "injection": "Injection",
+    "inhaler": "Inhalateur",
+    "cream": "Crème"
+  },
+  "expiryDate": "Date d'expiration",
+  "manufacturer": "Fabricant",
+  "dispenseMedication": "Délivrer un médicament",
+  "medications": "Annuaire des médicaments",
+  "prescriptions": "Ordonnances",
+  "medicationName": "Nom du médicament",
+  "stockQuantity": "Quantité en stock",
+  "price": "Prix ($)"
+}

@@ -1,0 +1,8 @@
+{
+  "title": "Gestion des autorisations",
+  "searchPlaceholder": "Rechercher des autorisations par nom...",
+  "addPermission": "Ajouter une autorisation",
+  "permissionName": "Nom de l'autorisation",
+  "module": "Module",
+  "description": "Description"
+}

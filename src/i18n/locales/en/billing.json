@@ -1,0 +1,16 @@
+{
+  "title": "Billing & Invoices",
+  "searchPlaceholder": "Search invoices by patient or ID...",
+  "createInvoice": "Create Invoice",
+  "invoices": "Invoices",
+  "payments": "Payments",
+  "invoiceId": "Invoice ID",
+  "totalAmount": "Total Amount ($)",
+  "paidAmount": "Paid Amount ($)",
+  "balance": "Balance Due ($)",
+  "paymentMethod": "Payment Method",
+  "cash": "Cash",
+  "card": "Credit Card",
+  "insurance": "Insurance",
+  "online": "Online Transfer"
+}
