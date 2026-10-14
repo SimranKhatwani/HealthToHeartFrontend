@@ -27,6 +27,11 @@ import {
   MoreHorizontal,
   CheckCircle,
   XCircle,
+  ShieldCheck,
+  AlertCircle,
+  Loader2,
+  UserCheck,
+  Info,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -38,6 +43,7 @@ import {
 } from "../components/UI/DropMenu"
 import { cn } from "../components/Lib/Utilis"
 import { useCreateInsuranceClaimMutation, useCreateInsuranceProviderMutation, useDeleteInsuranceClaimMutation, useDeleteInsuranceProviderMutation, useGetInsuranceClaimsQuery, useGetInsuranceProvidersQuery, useUpdateInsuranceClaimMutation, useUpdateInsuranceProviderMutation } from "../redux/slices/insuranceSlice"
+import { useSearchAbhaAccountMutation, useInitiateAbhaAuthMutation } from "../redux/slices/abhaSlice"
 import { useGetPatientsQuery } from "../redux/slices/patientSlice"
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -62,6 +68,42 @@ export default function Insurance() {
   const [updateInsuranceProvider] = useUpdateInsuranceProviderMutation();
   const [createInsuranceClaim] = useCreateInsuranceClaimMutation();
   const [updateInsuranceClaim] = useUpdateInsuranceClaimMutation();
+  const [searchAbhaAccount] = useSearchAbhaAccountMutation();
+  const [initiateAbhaAuth] = useInitiateAbhaAuthMutation();
+
+  // ABHA Claim Workflow State
+  const [claimCategory, setClaimCategory] = useState("PATIENT_ID"); // "PATIENT_ID" | "ABHA"
+  const [abhaInput, setAbhaInput] = useState("");
+  const [patientConsent, setPatientConsent] = useState(false);
+  const [abhaValidationError, setAbhaValidationError] = useState("");
+  const [abhaVerificationStatus, setAbhaVerificationStatus] = useState("IDLE"); // "IDLE" | "VERIFYING" | "VERIFIED" | "FAILED" | "UNCONFIGURED"
+  const [abhaVerificationResult, setAbhaVerificationResult] = useState(null);
+  const [abhaAssociatedPatientId, setAbhaAssociatedPatientId] = useState("");
+  const [abhaProviderId, setAbhaProviderId] = useState("");
+  const [abhaService, setAbhaService] = useState("");
+  const [abhaAmount, setAbhaAmount] = useState("");
+  const [abhaNotes, setAbhaNotes] = useState("");
+  const [abhaGovtId, setAbhaGovtId] = useState("");
+  const [isVerifyingAbha, setIsVerifyingAbha] = useState(false);
+  const [isSubmittingAbhaClaim, setIsSubmittingAbhaClaim] = useState(false);
+
+  const resetAddClaimState = () => {
+    setClaimCategory("PATIENT_ID");
+    setAbhaInput("");
+    setPatientConsent(false);
+    setAbhaValidationError("");
+    setAbhaVerificationStatus("IDLE");
+    setAbhaVerificationResult(null);
+    setAbhaAssociatedPatientId("");
+    setAbhaProviderId("");
+    setAbhaService("");
+    setAbhaAmount("");
+    setAbhaNotes("");
+    setAbhaGovtId("");
+    setIsVerifyingAbha(false);
+    setIsSubmittingAbhaClaim(false);
+  };
+
   const { data: patientData, error: patientError, isLoading: patientIsLoading, } = useGetPatientsQuery();
   const [paitentslist, setPaitentslist] = useState(patientData?.data)
   const filterRef = useRef(null);
@@ -184,14 +226,160 @@ export default function Insurance() {
     }
   };
 
-  // Add new claim
+  // Add new claim (Through Patient ID)
   const handleAddClaim = async (newClaim) => {
     try {
       const response = await createInsuranceClaim(newClaim).unwrap();
       toast.success(t("insurance.claimAddSuccess", "Claim added successfully!"));
       setShowAddClaim(false);
+      resetAddClaimState();
     } catch (error) {
-      toast.error(t("insurance.claimAddError", "Failed to add claim."));
+      const errMsg = error?.data?.error || error?.data?.message || t("insurance.claimAddError", "Failed to add claim.");
+      toast.error(errMsg);
+    }
+  };
+
+  const handleAbhaInputChange = (e) => {
+    const val = e.target.value;
+    setAbhaInput(val);
+    if (abhaVerificationStatus !== "IDLE") {
+      setAbhaVerificationStatus("IDLE");
+      setAbhaVerificationResult(null);
+    }
+    if (abhaValidationError) {
+      setAbhaValidationError("");
+    }
+  };
+
+  const handleVerifyAbha = async () => {
+    setAbhaValidationError("");
+    const clean = abhaInput.trim();
+    if (!clean) {
+      setAbhaValidationError(t("insurance.enterAbhaReq", "Please enter an ABHA Number or ABHA Address."));
+      return;
+    }
+
+    const digitsOnly = clean.replace(/[-\s]/g, "");
+    const is14Digit = /^\d{14}$/.test(digitsOnly);
+    const isAbhaAddress = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/.test(clean);
+
+    if (!is14Digit && !isAbhaAddress) {
+      setAbhaValidationError(
+        t("insurance.abhaFormatError", "Invalid format. Expected a 14-digit ABHA Number (e.g. 12-3456-7890-1234) or ABHA Address (e.g. patient@abdm).")
+      );
+      return;
+    }
+
+    if (!patientConsent) {
+      setAbhaValidationError(
+        t("insurance.consentRequired", "Patient consent is mandatory before querying and accessing ABHA account records.")
+      );
+      return;
+    }
+
+    setIsVerifyingAbha(true);
+    setAbhaVerificationStatus("VERIFYING");
+    setAbhaVerificationResult(null);
+
+    try {
+      const res = await searchAbhaAccount({ healthId: clean }).unwrap();
+      if (res && res.success) {
+        setAbhaVerificationStatus("VERIFIED");
+        setAbhaVerificationResult({
+          type: "SUCCESS",
+          data: res.data,
+          profile: res.data?.profile || res.data,
+          matchingPatients: res.matchingPatients || []
+        });
+
+        if (res.matchingPatients && res.matchingPatients.length === 1) {
+          setAbhaAssociatedPatientId(res.matchingPatients[0].patientId);
+        }
+        toast.success(t("insurance.abhaVerifiedSuccess", "ABHA account verified successfully!"));
+      } else {
+        setAbhaVerificationStatus("FAILED");
+        setAbhaVerificationResult({
+          type: "FAILED",
+          message: res?.message || t("insurance.abhaNotFound", "ABHA account could not be found.")
+        });
+      }
+    } catch (err) {
+      const errPayload = err?.data || err;
+      const errorCode = errPayload?.error?.code;
+      const errorMsg = errPayload?.error?.message || errPayload?.message || "Failed to connect to ABHA verification service.";
+
+      if (errorCode === "ABDM_NOT_CONFIGURED" || err?.status === 502) {
+        setAbhaVerificationStatus("UNCONFIGURED");
+        setAbhaVerificationResult({
+          type: "UNCONFIGURED",
+          code: errorCode || "ABDM_NOT_CONFIGURED",
+          message: errorMsg,
+        });
+      } else {
+        setAbhaVerificationStatus("FAILED");
+        setAbhaVerificationResult({
+          type: "FAILED",
+          code: errorCode || "GATEWAY_ERROR",
+          message: errorMsg,
+        });
+      }
+    } finally {
+      setIsVerifyingAbha(false);
+    }
+  };
+
+  const handleAbhaClaimSubmit = async (e) => {
+    if (e) e.preventDefault();
+
+    if (!abhaAssociatedPatientId) {
+      toast.error(t("insurance.selectPatientReq", "Please select or link an admitted/consulting hospital patient for this claim."));
+      return;
+    }
+
+    if (!abhaProviderId) {
+      toast.error(t("insurance.selectProviderReq", "Please select an insurance provider."));
+      return;
+    }
+
+    if (!abhaService.trim()) {
+      toast.error(t("insurance.enterServiceReq", "Please specify the service or treatment."));
+      return;
+    }
+
+    const numAmount = parseFloat(abhaAmount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      toast.error(t("insurance.enterAmountReq", "Please enter a valid claim amount."));
+      return;
+    }
+
+    const cleanAbha = abhaInput.trim();
+    const provider = providers?.find((p) => p._id === abhaProviderId || p.id === abhaProviderId);
+    const patientObj = paitentslist?.find((p) => p._id === abhaAssociatedPatientId);
+
+    setIsSubmittingAbhaClaim(true);
+    try {
+      const newClaim = {
+        patientId: abhaAssociatedPatientId,
+        patientName: patientObj?.name || "",
+        providerId: abhaProviderId,
+        providerName: provider ? provider.name : "",
+        service: abhaService.trim(),
+        amount: numAmount,
+        notes: abhaNotes.trim() || `Submitted via ABHA: ${cleanAbha}`,
+        governmentId: abhaGovtId.trim() || cleanAbha,
+        claimCategory: "ABHA",
+        abhaNumber: cleanAbha,
+      };
+
+      await createInsuranceClaim(newClaim).unwrap();
+      toast.success(t("insurance.claimAddSuccess", "Insurance claim created successfully!"));
+      setShowAddClaim(false);
+      resetAddClaimState();
+    } catch (error) {
+      const errMsg = error?.data?.error || error?.data?.message || t("insurance.claimAddError", "Failed to add claim.");
+      toast.error(errMsg);
+    } finally {
+      setIsSubmittingAbhaClaim(false);
     }
   };
 
@@ -411,6 +599,7 @@ export default function Insurance() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>{t("common.id", "ID")}</TableHead>
+                      <TableHead>{t("insurance.claimCategory", "Category")}</TableHead>
                       <TableHead>{t("appointments.patient", "Patient")}</TableHead>
                       <TableHead>{t("insurance.provider", "Provider")}</TableHead>
                       <TableHead>{t("insurance.service", "Service")}</TableHead>
@@ -423,8 +612,30 @@ export default function Insurance() {
                     {filteredClaims?.map((claim) => (
                       <TableRow key={claim._id}>
                         <TableCell className="font-medium">{claim.id}</TableCell>
-                        <TableCell>{claim?.patientId?.name}</TableCell>
-                        <TableCell>{claim?.providerId?.name}</TableCell>
+                        <TableCell>
+                          {claim.claimCategory === "ABHA" ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300 border border-teal-200 dark:border-teal-700">
+                              <ShieldCheck className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                              ABHA
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                              <FileText className="w-3.5 h-3.5 text-gray-500" />
+                              Patient ID
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <span className="font-medium">{claim?.patientId?.name || "—"}</span>
+                            {claim.claimCategory === "ABHA" && claim.abhaNumber && (
+                              <span className="text-[11px] text-teal-600 dark:text-teal-400 font-mono block">
+                                ABHA: {claim.abhaNumber}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{claim?.providerId?.name || "—"}</TableCell>
                         <TableCell>{claim.service}</TableCell>
                         <TableCell>${claim.amount.toLocaleString()}</TableCell>
                         <TableCell>
@@ -680,112 +891,529 @@ export default function Insurance() {
       </Dialog>
 
       {/* Add Claim Dialog */}
-      <Dialog open={showAddClaim} onOpenChange={setShowAddClaim}>
-        <DialogContent className="sm:max-w-[500px]">
+      <Dialog
+        open={showAddClaim}
+        onOpenChange={(open) => {
+          setShowAddClaim(open);
+          if (!open) resetAddClaimState();
+        }}
+      >
+        <DialogContent className="sm:max-w-[620px] max-h-[92vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t("insurance.addInsuranceClaim", "Add Insurance Claim")}</DialogTitle>
-            <DialogDescription>{t("insurance.enterClaimDetails", "Enter the details of the new insurance claim.")}</DialogDescription>
+            <DialogDescription>
+              {t("insurance.enterClaimDetails", "Create an insurance claim through Patient ID or verified ABHA number.")}
+            </DialogDescription>
           </DialogHeader>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              const formData = new FormData(e.target)
-              const providerId = formData.get("providerId")
-              const provider = providers.find((p) => p.id === providerId)
 
-              const newClaim = {
-                patientName: formData.get("patientName"),
-                patientId: formData.get("patientId"),
-                providerId: providerId,
-                providerName: provider ? provider.name : "",
-                service: formData.get("service"),
-                amount: Number.parseFloat(formData.get("amount")),
-                notes: formData.get("notes") || "Pending review",
-                governmentId: formData.get("governmentId"),
-              }
-              handleAddClaim(newClaim)
-            }}
-          >
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="patientId" className="text-right">
-                  {t("insurance.patientId", "Patient ID")}
-                </Label>
-                <select
-                  id="patientId"
-                  name="patientId"
-                  className="col-span-3 border p-2 rounded"
-                  required
+          {/* Category Selector Segmented Tabs */}
+          <div className="flex border-b border-gray-200 dark:border-gray-700 mt-1 mb-4">
+            <button
+              type="button"
+              onClick={() => setClaimCategory("PATIENT_ID")}
+              className={cn(
+                "flex-1 py-2.5 text-sm font-semibold text-center transition-all border-b-2",
+                claimCategory === "PATIENT_ID"
+                  ? "border-teal-500 text-teal-600 dark:text-teal-400 bg-teal-50/50 dark:bg-teal-950/30"
+                  : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 hover:border-gray-300"
+              )}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <FileText className="w-4 h-4" />
+                <span>{t("insurance.categoryPatientId", "Through Patient ID")}</span>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setClaimCategory("ABHA")}
+              className={cn(
+                "flex-1 py-2.5 text-sm font-semibold text-center transition-all border-b-2",
+                claimCategory === "ABHA"
+                  ? "border-teal-500 text-teal-600 dark:text-teal-400 bg-teal-50/50 dark:bg-teal-950/30"
+                  : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 hover:border-gray-300"
+              )}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <ShieldCheck className="w-4 h-4" />
+                <span>{t("insurance.categoryAbha", "Through ABHA")}</span>
+              </div>
+            </button>
+          </div>
+
+          {/* Category 1: Through Patient ID (Preserved Existing Workflow) */}
+          {claimCategory === "PATIENT_ID" && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                const formData = new FormData(e.target)
+                const providerId = formData.get("providerId")
+                const provider = providers?.find((p) => p.id === providerId || p._id === providerId)
+
+                const newClaim = {
+                  patientName: formData.get("patientName"),
+                  patientId: formData.get("patientId"),
+                  providerId: providerId,
+                  providerName: provider ? provider.name : "",
+                  service: formData.get("service"),
+                  amount: Number.parseFloat(formData.get("amount")),
+                  notes: formData.get("notes") || "Pending review",
+                  governmentId: formData.get("governmentId"),
+                  claimCategory: "PATIENT_ID",
+                }
+                handleAddClaim(newClaim)
+              }}
+            >
+              <div className="grid gap-4 py-2">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="patientId" className="text-right">
+                    {t("insurance.patientId", "Patient ID")}
+                  </Label>
+                  <select
+                    id="patientId"
+                    name="patientId"
+                    className="col-span-3 border p-2 rounded"
+                    required
+                  >
+                    <option value="" disabled selected>
+                      {t("insurance.selectPatient", "Select patient")}
+                    </option>
+                    {paitentslist
+                      ?.filter((p) => p.status === "Admitted" || p.status === "Discharged" || p.status === "Deceased" || p.status === "InConsultation")
+                      ?.map((patient) => (
+                        <option key={patient._id} value={patient._id}>
+                          {patient.id}{" - "}
+                          {patient.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="providerId" className="text-right">
+                    {t("insurance.provider", "Provider")}
+                  </Label>
+                  <select
+                    id="providerId"
+                    name="providerId"
+                    className="col-span-3 border p-2 rounded"
+                    required
+                  >
+                    <option value="" disabled selected>
+                      {t("insurance.selectProvider", "Select provider")}
+                    </option>
+                    {providers
+                      ?.filter((p) => p.status === "active")
+                      ?.map((provider) => (
+                        <option key={provider._id} value={provider._id}>
+                          {provider.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="service" className="text-right">
+                    {t("insurance.service", "Service")}
+                  </Label>
+                  <Input id="service" name="service" className="col-span-3 border border-black rounded px-3 py-2" required />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="amount" className="text-right">
+                    {t("insurance.amount", "Amount")} ($)
+                  </Label>
+                  <Input id="amount" name="amount" type="number" min="0" step="0.01" className="col-span-3 border border-black rounded px-3 py-2" required />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="notes" className="text-right">
+                    {t("insurance.notes", "Notes")}
+                  </Label>
+                  <Input id="notes" name="notes" className="col-span-3 border border-black rounded px-3 py-2" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="governmentId" className="text-right">
+                    {t("insurance.governmentId", "Government ID")}
+                  </Label>
+                  <Input id="governmentId" name="governmentId" className="col-span-3 border border-black rounded px-3 py-2" />
+                </div>
+              </div>
+              <DialogFooter className="mt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowAddClaim(false);
+                    resetAddClaimState();
+                  }}
                 >
-                  <option value="" disabled selected>
-                    {t("insurance.selectPatient", "Select patient")}
-                  </option>
-                  {paitentslist
-                    ?.filter((p) => p.status === "Admitted" || p.status === "Discharged" || p.status === "Deceased" || p.status === "InConsultation")
-                    ?.map((patient) => (
-                      <option key={patient._id} value={patient._id}>
-                        {patient.id}{" - "}
-                        {patient.name}
-                      </option>
-                    ))}
-                </select>
+                  {t("common.cancel", "Cancel")}
+                </Button>
+                <Button type="submit" className="bg-teal-500 hover:bg-teal-600">
+                  {t("insurance.addClaim", "Add Claim")}
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+
+          {/* Category 2: Through ABHA (New Workflow) */}
+          {claimCategory === "ABHA" && (
+            <div className="space-y-4 py-1">
+              {/* Step 1: Enter ABHA Number */}
+              <div className="border border-teal-200 dark:border-teal-900 rounded-lg p-4 bg-teal-50/30 dark:bg-teal-950/20 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-teal-600 text-white text-xs font-bold">
+                      1
+                    </span>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      {t("insurance.step1Abha", "Enter ABHA Number & Patient Consent")}
+                    </h3>
+                  </div>
+                  {abhaVerificationStatus === "VERIFIED" && (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      {t("insurance.verified", "Verified")}
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="abhaNumberInput" className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    {t("insurance.abhaNumberLabel", "ABHA Number or ABHA Address")} <span className="text-rose-500">*</span>
+                  </Label>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        id="abhaNumberInput"
+                        type="text"
+                        value={abhaInput}
+                        onChange={handleAbhaInputChange}
+                        placeholder="e.g. 12-3456-7890-1234 or patient@abdm"
+                        className={cn(
+                          "w-full text-sm font-mono border rounded px-3 py-2",
+                          abhaValidationError ? "border-rose-500 focus:ring-rose-500" : "border-gray-300 dark:border-gray-600"
+                        )}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={handleVerifyAbha}
+                      disabled={isVerifyingAbha}
+                      className="bg-teal-500 hover:bg-teal-600 shrink-0 text-white"
+                    >
+                      {isVerifyingAbha ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                          {t("insurance.verifying", "Verifying...")}
+                        </>
+                      ) : (
+                        <>
+                          <ShieldCheck className="w-4 h-4 mr-1.5" />
+                          {t("insurance.verifyAbha", "Verify ABHA")}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    {t("insurance.abhaHint", "Hint: Enter a 14-digit ABHA Number (e.g., 12-3456-7890-1234) or registered ABHA Address (e.g., user@abdm).")}
+                  </p>
+                </div>
+
+                {/* Patient Consent Checkbox */}
+                <div className="pt-1">
+                  <label className="flex items-start gap-2.5 cursor-pointer text-xs text-gray-600 dark:text-gray-300 select-none">
+                    <input
+                      type="checkbox"
+                      id="patientConsentCheckbox"
+                      checked={patientConsent}
+                      onChange={(e) => {
+                        setPatientConsent(e.target.checked);
+                        if (e.target.checked && abhaValidationError.includes("consent")) {
+                          setAbhaValidationError("");
+                        }
+                      }}
+                      className="mt-0.5 rounded border-gray-300 text-teal-600 focus:ring-teal-500 w-4 h-4 shrink-0"
+                    />
+                    <span>
+                      {t(
+                        "insurance.patientConsentText",
+                        "Patient provides explicit consent to verify identity and retrieve ABHA health account details for insurance claim processing under ABDM guidelines."
+                      )}
+                    </span>
+                  </label>
+                </div>
+
+                {/* Inline Validation Error */}
+                {abhaValidationError && (
+                  <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 p-2 rounded border border-rose-200 dark:border-rose-900">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{abhaValidationError}</span>
+                  </div>
+                )}
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="providerId" className="text-right">
-                  {t("insurance.provider", "Provider")}
-                </Label>
-                <select
-                  id="providerId"
-                  name="providerId"
-                  className="col-span-3 border p-2 rounded"
-                  required
+
+              {/* Step 2: Verification State & Patient Association */}
+              {abhaVerificationStatus === "VERIFYING" && (
+                <div className="border border-teal-200 dark:border-teal-800 rounded-lg p-4 bg-teal-50/50 dark:bg-teal-950/30 flex items-center gap-3">
+                  <Loader2 className="w-5 h-5 text-teal-600 animate-spin shrink-0" />
+                  <div className="text-xs text-teal-800 dark:text-teal-200">
+                    <p className="font-semibold">{t("insurance.connectingGateway", "Connecting to ABDM Gateway...")}</p>
+                    <p className="text-[11px] text-teal-600 dark:text-teal-400">
+                      {t("insurance.verifyingAbhaAccount", "Authenticating ABHA account and retrieving demographic details.")}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {abhaVerificationStatus === "VERIFIED" && (
+                <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 bg-emerald-50/50 dark:bg-emerald-950/30 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold">
+                      2
+                    </span>
+                    <h3 className="text-sm font-semibold text-emerald-900 dark:text-emerald-100 flex items-center gap-1.5">
+                      <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      {t("insurance.verifiedPatientDetails", "Verified ABHA Patient Details")}
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-white dark:bg-gray-800 p-3 rounded border border-emerald-100 dark:border-emerald-900 text-xs">
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">{t("common.name", "Name")}</span>
+                      <span className="font-semibold text-gray-800 dark:text-gray-100">
+                        {abhaVerificationResult?.profile?.name || "Verified Citizen"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">{t("insurance.abhaNumber", "ABHA Number")}</span>
+                      <span className="font-mono text-gray-800 dark:text-gray-100">
+                        {abhaVerificationResult?.profile?.healthIdNumber || abhaInput}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">{t("common.gender", "Gender")}</span>
+                      <span className="text-gray-800 dark:text-gray-100">
+                        {abhaVerificationResult?.profile?.gender || "Not Specified"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Patient Linking / Association */}
+                  <div className="space-y-1.5 pt-1">
+                    <Label htmlFor="abhaLinkedPatient" className="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                      {t("insurance.linkHospitalRecord", "Associate with Hospital Patient Record")} <span className="text-rose-500">*</span>
+                    </Label>
+                    <select
+                      id="abhaLinkedPatient"
+                      value={abhaAssociatedPatientId}
+                      onChange={(e) => setAbhaAssociatedPatientId(e.target.value)}
+                      className="w-full border p-2 rounded text-xs bg-white dark:bg-gray-800"
+                      required
+                    >
+                      <option value="">-- {t("insurance.selectPatient", "Select patient to associate with this claim")} --</option>
+                      {paitentslist
+                        ?.filter((p) => p.status === "Admitted" || p.status === "Discharged" || p.status === "Deceased" || p.status === "InConsultation")
+                        ?.map((patient) => (
+                          <option key={patient._id} value={patient._id}>
+                            {patient.id} - {patient.name} ({patient.phone || "No phone"})
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {abhaVerificationStatus === "UNCONFIGURED" && (
+                <div className="border border-amber-300 dark:border-amber-700 rounded-lg p-4 bg-amber-50/70 dark:bg-amber-950/40 space-y-3">
+                  <div className="flex items-start gap-2.5">
+                    <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div className="text-xs space-y-1">
+                      <h4 className="font-semibold text-amber-900 dark:text-amber-200">
+                        {t("insurance.sandboxPendingTitle", "ABDM Gateway Sandbox Integration Pending")}
+                      </h4>
+                      <p className="text-amber-800 dark:text-amber-300 text-[11px] leading-relaxed">
+                        {t(
+                          "insurance.sandboxPendingDesc",
+                          "Official ABDM API credentials (ABDM_CLIENT_ID / ABDM_CLIENT_SECRET) are currently pending sandbox registration approval. Live government identity verification requires authorized credentials and cannot be simulated."
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-amber-200 dark:border-amber-800 space-y-1.5">
+                    <Label htmlFor="abhaFallbackPatient" className="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                      {t("insurance.associatePatientRecord", "Associate Hospital Patient Record for ABHA Claim")} <span className="text-rose-500">*</span>
+                    </Label>
+                    <select
+                      id="abhaFallbackPatient"
+                      value={abhaAssociatedPatientId}
+                      onChange={(e) => setAbhaAssociatedPatientId(e.target.value)}
+                      className="w-full border p-2 rounded text-xs bg-white dark:bg-gray-800 border-gray-300"
+                      required
+                    >
+                      <option value="">-- {t("insurance.selectPatientToLink", "Select hospital patient to associate with this ABHA claim")} --</option>
+                      {paitentslist
+                        ?.filter((p) => p.status === "Admitted" || p.status === "Discharged" || p.status === "Deceased" || p.status === "InConsultation")
+                        ?.map((patient) => (
+                          <option key={patient._id} value={patient._id}>
+                            {patient.id} - {patient.name} ({patient.phone || "No phone"})
+                          </option>
+                        ))}
+                    </select>
+                    <p className="text-[11px] text-muted-foreground">
+                      {t("insurance.associatePatientHint", "The claim will be created under the ABHA category with ABHA number recorded and linked to this patient.")}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {abhaVerificationStatus === "FAILED" && (
+                <div className="border border-rose-200 dark:border-rose-900 rounded-lg p-3.5 bg-rose-50 dark:bg-rose-950/40 flex items-start gap-2.5">
+                  <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                  <div className="text-xs space-y-1">
+                    <h4 className="font-semibold text-rose-900 dark:text-rose-200">
+                      {t("insurance.verificationFailedTitle", "ABHA Verification Failed")}
+                    </h4>
+                    <p className="text-rose-700 dark:text-rose-300 text-[11px]">
+                      {abhaVerificationResult?.message || t("insurance.verificationFailedDesc", "The ABHA number could not be verified by the gateway. Please verify the number and try again.")}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Enter Insurance Claim Details */}
+              {(abhaVerificationStatus === "VERIFIED" || (abhaVerificationStatus === "UNCONFIGURED" && abhaAssociatedPatientId)) && (
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50/50 dark:bg-gray-800/30 space-y-3 mt-3">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-teal-600 text-white text-xs font-bold">
+                      {abhaVerificationStatus === "VERIFIED" ? "3" : "2"}
+                    </span>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      {t("insurance.step3ClaimDetails", "Insurance Claim Details")}
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="space-y-1 sm:col-span-2">
+                      <Label htmlFor="abhaProviderSelect" className="font-medium">
+                        {t("insurance.provider", "Insurance Provider")} <span className="text-rose-500">*</span>
+                      </Label>
+                      <select
+                        id="abhaProviderSelect"
+                        value={abhaProviderId}
+                        onChange={(e) => setAbhaProviderId(e.target.value)}
+                        className="w-full border p-2 rounded text-xs bg-white dark:bg-gray-800"
+                        required
+                      >
+                        <option value="">{t("insurance.selectProvider", "Select provider")}</option>
+                        {providers
+                          ?.filter((p) => p.status === "active")
+                          ?.map((provider) => (
+                            <option key={provider._id} value={provider._id}>
+                              {provider.name}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label htmlFor="abhaServiceInput" className="font-medium">
+                        {t("insurance.service", "Service / Treatment")} <span className="text-rose-500">*</span>
+                      </Label>
+                      <Input
+                        id="abhaServiceInput"
+                        value={abhaService}
+                        onChange={(e) => setAbhaService(e.target.value)}
+                        placeholder="e.g. Inpatient Surgery / Treatment"
+                        className="w-full text-xs"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label htmlFor="abhaAmountInput" className="font-medium">
+                        {t("insurance.amount", "Claim Amount")} ($) <span className="text-rose-500">*</span>
+                      </Label>
+                      <Input
+                        id="abhaAmountInput"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={abhaAmount}
+                        onChange={(e) => setAbhaAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="w-full text-xs"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label htmlFor="abhaNotesInput" className="font-medium">
+                        {t("insurance.notes", "Notes")}
+                      </Label>
+                      <Input
+                        id="abhaNotesInput"
+                        value={abhaNotes}
+                        onChange={(e) => setAbhaNotes(e.target.value)}
+                        placeholder="Optional notes or pre-auth remarks"
+                        className="w-full text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label htmlFor="abhaGovtIdInput" className="font-medium">
+                        {t("insurance.governmentId", "Government ID / ABHA Ref")}
+                      </Label>
+                      <Input
+                        id="abhaGovtIdInput"
+                        value={abhaGovtId || abhaInput}
+                        onChange={(e) => setAbhaGovtId(e.target.value)}
+                        placeholder="Defaults to ABHA Number"
+                        className="w-full text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <DialogFooter className="mt-4 pt-2 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowAddClaim(false);
+                    resetAddClaimState();
+                  }}
                 >
-                  <option value="" disabled selected>
-                    {t("insurance.selectProvider", "Select provider")}
-                  </option>
-                  {providers
-                    ?.filter((p) => p.status === "active")
-                    ?.map((provider) => (
-                      <option key={provider._id} value={provider._id}>
-                        {provider.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="service" className="text-right">
-                  {t("insurance.service", "Service")}
-                </Label>
-                <Input id="service" name="service" className="col-span-3 border border-black rounded px-3 py-2" required />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="amount" className="text-right">
-                  {t("insurance.amount", "Amount")} ($)
-                </Label>
-                <Input id="amount" name="amount" type="number" min="0" step="0.01" className="col-span-3 border border-black rounded px-3 py-2" required />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="notes" className="text-right">
-                  {t("insurance.notes", "Notes")}
-                </Label>
-                <Input id="notes" name="notes" className="col-span-3 border border-black rounded px-3 py-2" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="governmentId" className="text-right">
-                  {t("insurance.governmentId", "Government ID")}
-                </Label>
-                <Input id="governmentId" name="governmentId" className="col-span-3 border border-black rounded px-3 py-2" />
-              </div>
+                  {t("common.cancel", "Cancel")}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleAbhaClaimSubmit}
+                  disabled={
+                    isSubmittingAbhaClaim ||
+                    !abhaAssociatedPatientId ||
+                    !abhaProviderId ||
+                    !abhaService.trim() ||
+                    !abhaAmount ||
+                    Number(abhaAmount) <= 0 ||
+                    (abhaVerificationStatus !== "VERIFIED" && abhaVerificationStatus !== "UNCONFIGURED")
+                  }
+                  className="bg-teal-500 hover:bg-teal-600 text-white disabled:opacity-50"
+                >
+                  {isSubmittingAbhaClaim ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                      {t("insurance.submitting", "Submitting Claim...")}
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-4 h-4 mr-1.5" />
+                      {t("insurance.submitAbhaClaim", "Submit Insurance Claim")}
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowAddClaim(false)}>
-                {t("common.cancel", "Cancel")}
-              </Button>
-              <Button type="submit" className="bg-teal-500 hover:bg-teal-600">
-                {t("insurance.addClaim", "Add Claim")}
-              </Button>
-            </DialogFooter>
-          </form>
+          )}
         </DialogContent>
       </Dialog>
 

@@ -24,9 +24,11 @@ import { notificationsApi } from "./slices/notificationSlice"
 import { messageApi } from "./slices/messageSlice";
 import { permissionsApi } from "./slices/permissionSlice";
 import { organizationApi } from "./slices/organizationSlice";
+import { abhaApi } from "./slices/abhaSlice";
 
 const store = configureStore({
   reducer: {
+    [abhaApi.reducerPath]: abhaApi.reducer,
     [operationsApi.reducerPath]: operationsApi.reducer,
     [bloodBankApi.reducerPath]: bloodBankApi.reducer,
     role: roleReducer,
@@ -78,6 +80,7 @@ const store = configureStore({
       messageApi.middleware,
       permissionsApi.middleware,
       organizationApi.middleware,
+      abhaApi.middleware,
     ),  
 });
 
