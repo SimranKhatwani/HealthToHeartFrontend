@@ -106,6 +106,7 @@ export default function Insurance() {
 
   const { data: patientData, error: patientError, isLoading: patientIsLoading, } = useGetPatientsQuery();
   const [paitentslist, setPaitentslist] = useState(patientData?.data)
+  const selectedAbhaPatient = paitentslist?.find((p) => p._id === abhaAssociatedPatientId);
   const filterRef = useRef(null);
   const [selectedSurgeon, setSelectedSurgeon] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
@@ -292,7 +293,7 @@ export default function Insurance() {
           matchingPatients: res.matchingPatients || []
         });
 
-        if (res.matchingPatients && res.matchingPatients.length === 1) {
+        if (res.matchingPatients && res.matchingPatients.length === 1 && !abhaAssociatedPatientId) {
           setAbhaAssociatedPatientId(res.matchingPatients[0].patientId);
         }
         toast.success(t("insurance.abhaVerifiedSuccess", "ABHA account verified successfully!"));
@@ -1055,6 +1056,33 @@ export default function Insurance() {
           {/* Category 2: Through ABHA (New Workflow) */}
           {claimCategory === "ABHA" && (
             <div className="space-y-4 py-1">
+              {/* Option to select Patient ID at top as shown in Image 1 */}
+              <div className="grid grid-cols-4 items-center gap-4 py-1">
+                <Label htmlFor="abhaPatientId" className="text-right">
+                  {t("insurance.patientId", "Patient ID")}
+                </Label>
+                <select
+                  id="abhaPatientId"
+                  name="abhaPatientId"
+                  value={abhaAssociatedPatientId}
+                  onChange={(e) => setAbhaAssociatedPatientId(e.target.value)}
+                  className="col-span-3 border p-2 rounded bg-white dark:bg-gray-800"
+                  required
+                >
+                  <option value="" disabled={Boolean(abhaAssociatedPatientId)}>
+                    {t("insurance.selectPatient", "Select patient")}
+                  </option>
+                  {paitentslist
+                    ?.filter((p) => p.status === "Admitted" || p.status === "Discharged" || p.status === "Deceased" || p.status === "InConsultation")
+                    ?.map((patient) => (
+                      <option key={patient._id} value={patient._id}>
+                        {patient.id}{" - "}
+                        {patient.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
               {/* Step 1: Enter ABHA Number */}
               <div className="border border-teal-200 dark:border-teal-900 rounded-lg p-4 bg-teal-50/30 dark:bg-teal-950/20 space-y-3">
                 <div className="flex items-center justify-between">
@@ -1149,7 +1177,7 @@ export default function Insurance() {
                 )}
               </div>
 
-              {/* Step 2: Verification State & Patient Association */}
+              {/* Step 2: Verification State & Cross-Check Comparison */}
               {abhaVerificationStatus === "VERIFYING" && (
                 <div className="border border-teal-200 dark:border-teal-800 rounded-lg p-4 bg-teal-50/50 dark:bg-teal-950/30 flex items-center gap-3">
                   <Loader2 className="w-5 h-5 text-teal-600 animate-spin shrink-0" />
@@ -1195,28 +1223,54 @@ export default function Insurance() {
                     </div>
                   </div>
 
-                  {/* Patient Linking / Association */}
-                  <div className="space-y-1.5 pt-1">
-                    <Label htmlFor="abhaLinkedPatient" className="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                      {t("insurance.linkHospitalRecord", "Associate with Hospital Patient Record")} <span className="text-rose-500">*</span>
-                    </Label>
-                    <select
-                      id="abhaLinkedPatient"
-                      value={abhaAssociatedPatientId}
-                      onChange={(e) => setAbhaAssociatedPatientId(e.target.value)}
-                      className="w-full border p-2 rounded text-xs bg-white dark:bg-gray-800"
-                      required
-                    >
-                      <option value="">-- {t("insurance.selectPatient", "Select patient to associate with this claim")} --</option>
-                      {paitentslist
-                        ?.filter((p) => p.status === "Admitted" || p.status === "Discharged" || p.status === "Deceased" || p.status === "InConsultation")
-                        ?.map((patient) => (
-                          <option key={patient._id} value={patient._id}>
-                            {patient.id} - {patient.name} ({patient.phone || "No phone"})
-                          </option>
-                        ))}
-                    </select>
-                  </div>
+                  {/* Cross-Check Comparison with Selected Patient ID */}
+                  {selectedAbhaPatient ? (
+                    <div className="pt-2 border-t border-emerald-200 dark:border-emerald-800 space-y-2">
+                      <div className="text-xs font-semibold text-emerald-950 dark:text-emerald-100 flex items-center justify-between">
+                        <span>{t("insurance.crossCheckComparison", "Cross-Check Comparison with Hospital Patient")}</span>
+                        <span className="text-[11px] font-normal text-muted-foreground">
+                          {selectedAbhaPatient.id} ({selectedAbhaPatient.name})
+                        </span>
+                      </div>
+
+                      {(() => {
+                        const hospName = selectedAbhaPatient.name?.trim().toLowerCase().replace(/\s+/g, " ") || "";
+                        const abhaName = (abhaVerificationResult?.profile?.name || "").trim().toLowerCase().replace(/\s+/g, " ");
+                        const isMatch = hospName && abhaName && hospName === abhaName;
+
+                        return isMatch ? (
+                          <div className="flex items-center gap-2 p-2.5 rounded bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 text-xs border border-emerald-300 dark:border-emerald-800">
+                            <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <span>
+                              <strong>{t("insurance.crossCheckMatchTitle", "Identity Confirmed:")}</strong>{" "}
+                              {t(
+                                "insurance.crossCheckMatchDesc",
+                                "Hospital record name matches the ABHA profile verified name."
+                              )}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 p-2.5 rounded bg-amber-100/80 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 text-xs border border-amber-300 dark:border-amber-700">
+                            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                            <span>
+                              <strong>{t("insurance.crossCheckDiscrepancyTitle", "Discrepancy Detected:")}</strong>{" "}
+                              {t(
+                                "insurance.crossCheckDiscrepancyDesc",
+                                "Hospital patient name differs from verified ABHA profile name. Please verify patient identity before submitting."
+                              )}
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    <div className="pt-2 border-t border-emerald-200 dark:border-emerald-800">
+                      <p className="text-xs text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                        <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
+                        {t("insurance.selectPatientAtTopPrompt", "Please select a Patient ID from the dropdown at the top to complete cross-checking.")}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1237,29 +1291,21 @@ export default function Insurance() {
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-amber-200 dark:border-amber-800 space-y-1.5">
-                    <Label htmlFor="abhaFallbackPatient" className="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                      {t("insurance.associatePatientRecord", "Associate Hospital Patient Record for ABHA Claim")} <span className="text-rose-500">*</span>
-                    </Label>
-                    <select
-                      id="abhaFallbackPatient"
-                      value={abhaAssociatedPatientId}
-                      onChange={(e) => setAbhaAssociatedPatientId(e.target.value)}
-                      className="w-full border p-2 rounded text-xs bg-white dark:bg-gray-800 border-gray-300"
-                      required
-                    >
-                      <option value="">-- {t("insurance.selectPatientToLink", "Select hospital patient to associate with this ABHA claim")} --</option>
-                      {paitentslist
-                        ?.filter((p) => p.status === "Admitted" || p.status === "Discharged" || p.status === "Deceased" || p.status === "InConsultation")
-                        ?.map((patient) => (
-                          <option key={patient._id} value={patient._id}>
-                            {patient.id} - {patient.name} ({patient.phone || "No phone"})
-                          </option>
-                        ))}
-                    </select>
-                    <p className="text-[11px] text-muted-foreground">
-                      {t("insurance.associatePatientHint", "The claim will be created under the ABHA category with ABHA number recorded and linked to this patient.")}
-                    </p>
+                  <div className="pt-2 border-t border-amber-200 dark:border-amber-800 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-semibold text-gray-800 dark:text-gray-200">
+                        {t("insurance.selectedHospitalPatient", "Selected Hospital Patient")}:{" "}
+                      </span>
+                      {selectedAbhaPatient ? (
+                        <span className="font-medium text-emerald-800 dark:text-emerald-300">
+                          {selectedAbhaPatient.id} - {selectedAbhaPatient.name}
+                        </span>
+                      ) : (
+                        <span className="text-amber-700 dark:text-amber-400 italic">
+                          {t("insurance.selectPatientAtTopPrompt", "Please select a Patient ID from the dropdown at the top to complete cross-checking.")}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

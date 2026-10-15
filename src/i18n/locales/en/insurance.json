@@ -93,6 +93,13 @@
   "enterServiceReq": "Please specify the service or treatment.",
   "enterAmountReq": "Please enter a valid claim amount.",
   "submittedViaAbha": "Submitted via ABHA: {{abha}}",
+  "crossCheckComparison": "Cross-Check Comparison with Hospital Patient",
+  "crossCheckMatchTitle": "Identity Confirmed:",
+  "crossCheckMatchDesc": "Hospital record name matches the ABHA profile verified name.",
+  "crossCheckDiscrepancyTitle": "Discrepancy Detected:",
+  "crossCheckDiscrepancyDesc": "Hospital patient name differs from verified ABHA profile name. Please verify patient identity before submitting.",
+  "selectPatientAtTopPrompt": "Please select a Patient ID from the dropdown at the top to complete cross-checking.",
+  "selectedHospitalPatient": "Selected Hospital Patient",
   "status": {
     "active": "Active",
     "inactive": "Inactive",
