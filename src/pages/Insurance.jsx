@@ -365,7 +365,7 @@ export default function Insurance() {
         providerName: provider ? provider.name : "",
         service: abhaService.trim(),
         amount: numAmount,
-        notes: abhaNotes.trim() || `Submitted via ABHA: ${cleanAbha}`,
+        notes: abhaNotes.trim() || t("insurance.submittedViaAbha", `Submitted via ABHA: ${cleanAbha}`, { abha: cleanAbha }),
         governmentId: abhaGovtId.trim() || cleanAbha,
         claimCategory: "ABHA",
         abhaNumber: cleanAbha,
@@ -616,12 +616,12 @@ export default function Insurance() {
                           {claim.claimCategory === "ABHA" ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300 border border-teal-200 dark:border-teal-700">
                               <ShieldCheck className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-                              ABHA
+                              {t("insurance.categoryAbhaShort", "ABHA")}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
                               <FileText className="w-3.5 h-3.5 text-gray-500" />
-                              Patient ID
+                              {t("insurance.categoryPatientIdShort", "Patient ID")}
                             </span>
                           )}
                         </TableCell>
@@ -1085,7 +1085,7 @@ export default function Insurance() {
                         type="text"
                         value={abhaInput}
                         onChange={handleAbhaInputChange}
-                        placeholder="e.g. 12-3456-7890-1234 or patient@abdm"
+                        placeholder={t("insurance.abhaPlaceholder", "e.g. 12-3456-7890-1234 or patient@abdm")}
                         className={cn(
                           "w-full text-sm font-mono border rounded px-3 py-2",
                           abhaValidationError ? "border-rose-500 focus:ring-rose-500" : "border-gray-300 dark:border-gray-600"
@@ -1178,7 +1178,7 @@ export default function Insurance() {
                     <div>
                       <span className="text-muted-foreground block text-[11px]">{t("common.name", "Name")}</span>
                       <span className="font-semibold text-gray-800 dark:text-gray-100">
-                        {abhaVerificationResult?.profile?.name || "Verified Citizen"}
+                        {abhaVerificationResult?.profile?.name || t("insurance.verifiedCitizen", "Verified Citizen")}
                       </span>
                     </div>
                     <div>
@@ -1190,7 +1190,7 @@ export default function Insurance() {
                     <div>
                       <span className="text-muted-foreground block text-[11px]">{t("common.gender", "Gender")}</span>
                       <span className="text-gray-800 dark:text-gray-100">
-                        {abhaVerificationResult?.profile?.gender || "Not Specified"}
+                        {abhaVerificationResult?.profile?.gender || t("insurance.notSpecified", "Not Specified")}
                       </span>
                     </div>
                   </div>
@@ -1321,7 +1321,7 @@ export default function Insurance() {
                         id="abhaServiceInput"
                         value={abhaService}
                         onChange={(e) => setAbhaService(e.target.value)}
-                        placeholder="e.g. Inpatient Surgery / Treatment"
+                        placeholder={t("insurance.servicePlaceholder", "e.g. Inpatient Surgery / Treatment")}
                         className="w-full text-xs"
                         required
                       />
@@ -1352,7 +1352,7 @@ export default function Insurance() {
                         id="abhaNotesInput"
                         value={abhaNotes}
                         onChange={(e) => setAbhaNotes(e.target.value)}
-                        placeholder="Optional notes or pre-auth remarks"
+                        placeholder={t("insurance.notesPlaceholder", "Optional notes or pre-auth remarks")}
                         className="w-full text-xs"
                       />
                     </div>
@@ -1365,7 +1365,7 @@ export default function Insurance() {
                         id="abhaGovtIdInput"
                         value={abhaGovtId || abhaInput}
                         onChange={(e) => setAbhaGovtId(e.target.value)}
-                        placeholder="Defaults to ABHA Number"
+                        placeholder={t("insurance.govtIdPlaceholder", "Defaults to ABHA Number")}
                         className="w-full text-xs"
                       />
                     </div>
